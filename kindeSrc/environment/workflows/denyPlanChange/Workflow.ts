@@ -115,6 +115,11 @@ export default async function Workflow(event: onPlanSelection) {
   // Sanity: we need user and org to proceed
   if (!userId || !orgCode || !requestedPlanCode) {
     // If something’s missing, let the selection proceed (or choose to deny).
+    console.log("Something is missing, reqturning")
+    console.log(
+      `userId: ${userId} orgCode: ${orgCode} requestedPlanCode: ${requestedPlanCode}`
+    )
+
     return
   }
 
