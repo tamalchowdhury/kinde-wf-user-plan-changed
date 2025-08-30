@@ -109,16 +109,13 @@ async function getUsageData(kindeId: string) {
 // Main workflow: compare current usage to requested plan limits
 export default async function Workflow(event: onPlanSelection) {
   const requestedPlanCode = event.context.billing.requestedPlanCode
-  const orgCode = event.context.organization?.code
   const userId = event.context.user?.id
 
   // Sanity: we need user and org to proceed
-  if (!userId || !orgCode || !requestedPlanCode) {
+  if (!userId || !requestedPlanCode) {
     // If something’s missing, let the selection proceed (or choose to deny).
     console.log("Something is missing, reqturning")
-    console.log(
-      `userId: ${userId} orgCode: ${orgCode} requestedPlanCode: ${requestedPlanCode}`
-    )
+    console.log(`userId: ${userId} requestedPlanCode: ${requestedPlanCode}`)
 
     return
   }
