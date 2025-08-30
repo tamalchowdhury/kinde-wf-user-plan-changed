@@ -23,6 +23,8 @@ export const workflowSettings: WorkflowSettings = {
 // The workflow code to be executed when the event is triggered
 export default async function Workflow(event: onPlanSelectionEvent) {
   //    some code here to check if user can perform the plan change
+  return
+
   denyPlanSelection(
     "To move from Professional to the Free plan you first need to:",
     [
