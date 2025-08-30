@@ -62,11 +62,11 @@ function limitForPlan(
   entitlements: any[],
   featureKey: string,
   requestedPlanCode: string
-): number | "unlimited" | undefined {
+): number {
   const ent = entitlements.find(
     (e: any) => e.feature_key === featureKey || e.feature_code === featureKey // handle either naming in responses
   )
-  if (!ent) return undefined
+  if (!ent) return 0
 
   // Prefer per-plan expansion if present
   const planEntry =
@@ -83,7 +83,7 @@ function limitForPlan(
     ent.max ?? // be defensive about schema variations
     null
 
-  return isUnlimited(rawMax) ? "unlimited" : Number(rawMax)
+  return isUnlimited(rawMax) ? 2147483647 : Number(rawMax)
 }
 
 // Ask YOUR API for the organization’s live usage (members, projects, etc.)
@@ -137,35 +137,39 @@ export default async function Workflow(event: onPlanSelection) {
   const failReasons: string[] = []
 
   // Tracked accounts
-  {
-    const limit = limitForPlan(entitlements, FEATURE_KEY, requestedPlanCode)
-    if (limit !== "unlimited" && limit !== undefined) {
-      const used = Number(usage.count ?? 0)
-      if (used > limit) {
-        failReasons.push(
-          `Delete tracked accounts to ${limit} or fewer (currently ${used}).`
-        )
-      }
-    }
-  }
+
+  // if (limit !== "unlimited" && limit !== undefined) {
+  //   const used = Number(usage.count ?? 0)
+  //   if (used > limit) {
+  //     failReasons.push(
+  //       `Delete tracked accounts to ${limit} or fewer (currently ${used}).`
+  //     )
+  //   }
+  // }
 
   // Add additional feature checks here as needed...
   // e.g. “accounts”, “environments”, “workspaces”, etc.
 
   // Get the limit
-  const requestedPlanLimit = 3
+  const requestedPlanLimit = limitForPlan(
+    entitlements,
+    FEATURE_KEY,
+    requestedPlanCode
+  )
+
   // Get the usage
-  const currentUsage = 5
+  // TODO: to be added
+  const currentUsage = 3
+
+  // log for debugging:
+  console.log("Requested plan limit", requestedPlanLimit)
 
   // Check if eligible
   const isEligibleForPlanChange = currentUsage <= requestedPlanLimit
 
   if (!isEligibleForPlanChange) {
-    denyPlanSelection(
-      "To move from Pro to the Free plan you first need to:",
-      [
-        `Delete tracked accounts to ${requestedPlanLimit} or fewer (currently ${currentUsage}).`
-      ]
-    )
+    denyPlanSelection("To move from Pro to the Free plan you first need to:", [
+      `Delete tracked accounts to ${requestedPlanLimit} or fewer (currently ${currentUsage}).`,
+    ])
   }
 }
